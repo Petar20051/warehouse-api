@@ -93,7 +93,7 @@ export class CreateWarehouseTable1753102873789 implements MigrationInterface {
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {
-    await queryRunner.query(`DROP TYPE IF EXISTS "product_type"`);
     await queryRunner.dropTable('warehouse');
+    await queryRunner.query(`DROP TYPE IF EXISTS "product_type"`);
   }
 }

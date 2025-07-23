@@ -1,6 +1,16 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule } from '@nestjs/config';
+import { CompanyModule } from './entities/company/company.module';
+import { UserModule } from './entities/user/user.module';
+import { AuthModule } from './auth/auth.module';
+import { SnakeNamingStrategy } from 'typeorm-naming-strategies';
+import { WarehouseModule } from './entities/warehouse/warehouse.module';
+import { ProductModule } from './entities/product/product.module';
+import { PartnerModule } from './entities/partner/partner.module';
+import { OrderModule } from './entities/order/order.module';
+import { OrderItemModule } from './entities/orderItem/orderItem.module';
+import { InvoiceModule } from './entities/invoice/invoice.module';
 
 @Module({
   imports: [
@@ -14,7 +24,17 @@ import { ConfigModule } from '@nestjs/config';
       database: process.env.DB_NAME,
       entities: [__dirname + '/**/*.entity{.ts,.js}'],
       synchronize: false,
+      namingStrategy: new SnakeNamingStrategy(),
     }),
+    AuthModule,
+    CompanyModule,
+    UserModule,
+    WarehouseModule,
+    ProductModule,
+    PartnerModule,
+    OrderModule,
+    OrderItemModule,
+    InvoiceModule,
   ],
 })
 export class AppModule {}
