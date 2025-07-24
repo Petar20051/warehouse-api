@@ -28,6 +28,9 @@ import {
   ApiParam,
   ApiTags,
 } from '@nestjs/swagger';
+import { Roles } from 'src/auth/decorators/roles.decorator';
+import { UserRole } from '../user/user.static';
+import { CustomMessage } from 'src/common/decorators/custom-message.decorator';
 
 @ApiTags('Products')
 @ApiBearerAuth('Authorization')
@@ -37,12 +40,14 @@ export class ProductController extends BaseController<Product> {
     super(productService);
   }
 
+  @CustomMessage('Products retrieved successfully')
   @Get()
   @ApiOperation({ summary: "Get all products for the current user's company" })
   findAll(@User() user: AuthUser) {
     return super.findAll(user);
   }
 
+  @CustomMessage('Product retrieved successfully')
   @Get(':id')
   @ApiOperation({ summary: 'Get a single product by ID' })
   @ApiParam({ name: 'id', description: 'Product UUID' })
@@ -53,7 +58,9 @@ export class ProductController extends BaseController<Product> {
     return super.findOne(params, user);
   }
 
+  @CustomMessage('Product created successfully')
   @Post()
+  @Roles(UserRole.OWNER, UserRole.OPERATOR)
   @ApiOperation({ summary: 'Create a new product' })
   @ApiBody({
     type: CreateProductDto,
@@ -69,7 +76,9 @@ export class ProductController extends BaseController<Product> {
     return super.create(dto, user);
   }
 
+  @CustomMessage('Product updated successfully')
   @Put(':id')
+  @Roles(UserRole.OWNER, UserRole.OPERATOR)
   @ApiOperation({ summary: 'Update a product by ID' })
   @ApiParam({ name: 'id', description: 'Product UUID' })
   @ApiBody({
@@ -87,7 +96,9 @@ export class ProductController extends BaseController<Product> {
     return super.update(params, dto, user);
   }
 
+  @CustomMessage('Product soft-deleted successfully')
   @Delete(':id')
+  @Roles(UserRole.OWNER, UserRole.OPERATOR)
   @ApiOperation({ summary: 'Soft delete a product by ID' })
   @ApiParam({ name: 'id', description: 'Product UUID' })
   softDelete(
@@ -97,7 +108,9 @@ export class ProductController extends BaseController<Product> {
     return super.softDelete(params, user);
   }
 
+  @CustomMessage('Product permanently deleted')
   @Delete(':id/hard')
+  @Roles(UserRole.OWNER)
   @ApiOperation({ summary: 'Permanently delete a product by ID' })
   @ApiParam({ name: 'id', description: 'Product UUID' })
   hardDelete(
@@ -105,5 +118,12 @@ export class ProductController extends BaseController<Product> {
     @User() user: AuthUser,
   ) {
     return super.hardDelete(params, user);
+  }
+
+  @CustomMessage('Top 5 best-selling products retrieved successfully')
+  @Get('best-selling')
+  @ApiOperation({ summary: 'Get top 5 best-selling products' })
+  getBestSellingProducts(@User() user: AuthUser) {
+    return this.productService.getBestSellingProducts(user.companyId);
   }
 }

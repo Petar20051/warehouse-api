@@ -27,6 +27,9 @@ import {
   ApiParam,
   ApiTags,
 } from '@nestjs/swagger';
+import { Roles } from 'src/auth/decorators/roles.decorator';
+import { UserRole } from '../user/user.static';
+import { CustomMessage } from 'src/common/decorators/custom-message.decorator';
 
 @ApiTags('Invoices')
 @ApiBearerAuth('Authorization')
@@ -36,12 +39,14 @@ export class InvoiceController extends BaseController<Invoice> {
     super(invoiceService);
   }
 
+  @CustomMessage('Invoices retrieved successfully')
   @Get()
   @ApiOperation({ summary: "Get all invoices for the current user's company" })
   findAll(@User() user: AuthUser) {
     return super.findAll(user);
   }
 
+  @CustomMessage('Invoice retrieved successfully')
   @Get(':id')
   @ApiOperation({ summary: 'Get a single invoice by ID' })
   @ApiParam({ name: 'id', description: 'Invoice UUID' })
@@ -52,7 +57,9 @@ export class InvoiceController extends BaseController<Invoice> {
     return super.findOne(params, user);
   }
 
+  @CustomMessage('Invoice created successfully')
   @Post()
+  @Roles(UserRole.OWNER, UserRole.OPERATOR)
   @ApiOperation({ summary: 'Create a new invoice' })
   @ApiBody({
     type: CreateInvoiceDto,
@@ -70,7 +77,9 @@ export class InvoiceController extends BaseController<Invoice> {
     return super.create(dto, user);
   }
 
+  @CustomMessage('Invoice updated successfully')
   @Put(':id')
+  @Roles(UserRole.OWNER, UserRole.OPERATOR)
   @ApiOperation({ summary: 'Update an invoice by ID' })
   @ApiParam({ name: 'id', description: 'Invoice UUID' })
   @ApiBody({
@@ -90,7 +99,9 @@ export class InvoiceController extends BaseController<Invoice> {
     return super.update(params, dto, user);
   }
 
+  @CustomMessage('Invoice soft-deleted successfully')
   @Delete(':id')
+  @Roles(UserRole.OWNER, UserRole.OPERATOR)
   @ApiOperation({ summary: 'Soft delete an invoice by ID' })
   @ApiParam({ name: 'id', description: 'Invoice UUID' })
   softDelete(
@@ -100,7 +111,9 @@ export class InvoiceController extends BaseController<Invoice> {
     return super.softDelete(params, user);
   }
 
+  @CustomMessage('Invoice permanently deleted')
   @Delete(':id/hard')
+  @Roles(UserRole.OWNER)
   @ApiOperation({ summary: 'Permanently delete an invoice by ID' })
   @ApiParam({ name: 'id', description: 'Invoice UUID' })
   hardDelete(

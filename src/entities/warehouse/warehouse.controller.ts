@@ -27,6 +27,9 @@ import { ZodValidationPipe } from 'nestjs-zod';
 import { IdParamDto, idParamSchema } from 'src/common/types/id-param.static';
 import { User } from 'src/auth/decorators/user.decorator';
 import { AuthUser } from 'src/common/types/auth-user';
+import { Roles } from 'src/auth/decorators/roles.decorator';
+import { UserRole } from '../user/user.static';
+import { CustomMessage } from 'src/common/decorators/custom-message.decorator';
 
 @ApiTags('Warehouses')
 @ApiBearerAuth('Authorization')
@@ -36,6 +39,7 @@ export class WarehouseController extends BaseController<Warehouse> {
     super(warehouseService);
   }
 
+  @CustomMessage('Warehouses retrieved successfully')
   @Get()
   @ApiOperation({
     summary: "Get all warehouses for the current user's company",
@@ -44,6 +48,7 @@ export class WarehouseController extends BaseController<Warehouse> {
     return super.findAll(user);
   }
 
+  @CustomMessage('Warehouse retrieved successfully')
   @Get(':id')
   @ApiOperation({ summary: 'Get a single warehouse by ID' })
   @ApiParam({ name: 'id', description: 'Warehouse UUID' })
@@ -54,7 +59,9 @@ export class WarehouseController extends BaseController<Warehouse> {
     return super.findOne(params, user);
   }
 
+  @CustomMessage('Warehouse created successfully')
   @Post()
+  @Roles(UserRole.OWNER, UserRole.OPERATOR)
   @ApiOperation({ summary: 'Create a new warehouse' })
   @ApiBody({
     type: CreateWarehouseDto,
@@ -70,7 +77,9 @@ export class WarehouseController extends BaseController<Warehouse> {
     return super.create(dto, user);
   }
 
+  @CustomMessage('Warehouse updated successfully')
   @Put(':id')
+  @Roles(UserRole.OWNER, UserRole.OPERATOR)
   @ApiOperation({ summary: 'Update a warehouse by ID' })
   @ApiParam({ name: 'id', description: 'Warehouse UUID' })
   @ApiBody({
@@ -88,7 +97,9 @@ export class WarehouseController extends BaseController<Warehouse> {
     return super.update(params, dto, user);
   }
 
+  @CustomMessage('Warehouse soft-deleted successfully')
   @Delete(':id')
+  @Roles(UserRole.OWNER, UserRole.OPERATOR)
   @ApiOperation({ summary: 'Soft delete a warehouse by ID' })
   @ApiParam({ name: 'id', description: 'Warehouse UUID' })
   softDelete(
@@ -98,7 +109,9 @@ export class WarehouseController extends BaseController<Warehouse> {
     return super.softDelete(params, user);
   }
 
+  @CustomMessage('Warehouse permanently deleted')
   @Delete(':id/hard')
+  @Roles(UserRole.OWNER)
   @ApiOperation({ summary: 'Permanently delete a warehouse by ID' })
   @ApiParam({ name: 'id', description: 'Warehouse UUID' })
   hardDelete(
@@ -106,5 +119,12 @@ export class WarehouseController extends BaseController<Warehouse> {
     @User() user: AuthUser,
   ) {
     return super.hardDelete(params, user);
+  }
+
+  @CustomMessage('Warehouse top stock data retrieved successfully')
+  @Get('top-stock')
+  @ApiOperation({ summary: 'Get product with highest stock per warehouse' })
+  getProductWithHighestStock(@User() user: AuthUser) {
+    return this.warehouseService.getProductWithHighestStock(user.companyId);
   }
 }

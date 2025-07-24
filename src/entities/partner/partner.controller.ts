@@ -27,6 +27,9 @@ import {
   ApiParam,
   ApiTags,
 } from '@nestjs/swagger';
+import { Roles } from 'src/auth/decorators/roles.decorator';
+import { UserRole } from '../user/user.static';
+import { CustomMessage } from 'src/common/decorators/custom-message.decorator';
 
 @ApiTags('Partners')
 @ApiBearerAuth('Authorization')
@@ -36,12 +39,14 @@ export class PartnerController extends BaseController<Partner> {
     super(partnerService);
   }
 
+  @CustomMessage('Partners retrieved successfully')
   @Get()
   @ApiOperation({ summary: "Get all partners for the current user's company" })
   findAll(@User() user: AuthUser) {
     return super.findAll(user);
   }
 
+  @CustomMessage('Partner retrieved successfully')
   @Get(':id')
   @ApiOperation({ summary: 'Get a single partner by ID' })
   @ApiParam({ name: 'id', description: 'Partner UUID' })
@@ -52,7 +57,9 @@ export class PartnerController extends BaseController<Partner> {
     return super.findOne(params, user);
   }
 
+  @CustomMessage('Partner created successfully')
   @Post()
+  @Roles(UserRole.OWNER, UserRole.OPERATOR)
   @ApiOperation({ summary: 'Create a new partner' })
   @ApiBody({
     type: CreatePartnerDto,
@@ -77,7 +84,9 @@ export class PartnerController extends BaseController<Partner> {
     return super.create(dto, user);
   }
 
+  @CustomMessage('Partner updated successfully')
   @Put(':id')
+  @Roles(UserRole.OWNER, UserRole.OPERATOR)
   @ApiOperation({ summary: 'Update a partner by ID' })
   @ApiParam({ name: 'id', description: 'Partner UUID' })
   @ApiBody({
@@ -104,7 +113,9 @@ export class PartnerController extends BaseController<Partner> {
     return super.update(params, dto, user);
   }
 
+  @CustomMessage('Partner soft-deleted successfully')
   @Delete(':id')
+  @Roles(UserRole.OWNER, UserRole.OPERATOR)
   @ApiOperation({ summary: 'Soft delete a partner by ID' })
   @ApiParam({ name: 'id', description: 'Partner UUID' })
   softDelete(
@@ -114,7 +125,9 @@ export class PartnerController extends BaseController<Partner> {
     return super.softDelete(params, user);
   }
 
+  @CustomMessage('Partner permanently deleted')
   @Delete(':id/hard')
+  @Roles(UserRole.OWNER)
   @ApiOperation({ summary: 'Permanently delete a partner by ID' })
   @ApiParam({ name: 'id', description: 'Partner UUID' })
   hardDelete(
@@ -122,5 +135,12 @@ export class PartnerController extends BaseController<Partner> {
     @User() user: AuthUser,
   ) {
     return super.hardDelete(params, user);
+  }
+
+  @CustomMessage('Top customer retrieved successfully')
+  @Get('top-customer')
+  @ApiOperation({ summary: 'Get top customer based on number of orders' })
+  getTopCustomerByOrders(@User() user: AuthUser) {
+    return this.partnerService.getTopCustomerByOrders(user.companyId);
   }
 }

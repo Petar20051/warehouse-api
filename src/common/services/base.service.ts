@@ -1,6 +1,19 @@
 import { Repository, DeepPartial, FindOptionsWhere } from 'typeorm';
 import { AuthUser } from '../types/auth-user';
 
+function whereCompany<TEntity extends { companyId?: string }>(
+  companyId: string,
+): FindOptionsWhere<TEntity> {
+  return { companyId } as FindOptionsWhere<TEntity>;
+}
+
+function whereIdAndCompany<TEntity extends { id: string; companyId?: string }>(
+  id: string,
+  companyId: string,
+): FindOptionsWhere<TEntity> {
+  return { id, companyId } as FindOptionsWhere<TEntity>;
+}
+
 export class BaseService<
   TEntity extends { id: string; companyId?: string },
   TCreateDto = DeepPartial<TEntity>,
@@ -10,13 +23,13 @@ export class BaseService<
 
   async findAllByCompany(companyId: string): Promise<TEntity[]> {
     return this.repo.find({
-      where: { companyId } as FindOptionsWhere<TEntity>,
+      where: whereCompany<TEntity>(companyId),
     });
   }
 
   async findOne(id: string, companyId: string): Promise<TEntity | null> {
     return this.repo.findOne({
-      where: { id, companyId } as FindOptionsWhere<TEntity>,
+      where: whereIdAndCompany<TEntity>(id, companyId),
     });
   }
 
@@ -29,6 +42,7 @@ export class BaseService<
       companyId: user.companyId,
       modifiedByUserId: user.userId,
     } as DeepPartial<TEntity>);
+
     return this.repo.save(entity);
   }
 
@@ -38,7 +52,7 @@ export class BaseService<
     user: AuthUser,
   ): Promise<TEntity | null> {
     const existing = await this.repo.findOne({
-      where: { id, companyId: user.companyId } as FindOptionsWhere<TEntity>,
+      where: whereIdAndCompany<TEntity>(id, user.companyId),
     });
 
     if (!existing) throw new Error('Entity not found');
@@ -52,10 +66,10 @@ export class BaseService<
   }
 
   async softDelete(id: string, companyId: string): Promise<void> {
-    await this.repo.softDelete({ id, companyId } as FindOptionsWhere<TEntity>);
+    await this.repo.softDelete(whereIdAndCompany<TEntity>(id, companyId));
   }
 
   async hardDelete(id: string, companyId: string): Promise<void> {
-    await this.repo.delete({ id, companyId } as FindOptionsWhere<TEntity>);
+    await this.repo.delete(whereIdAndCompany<TEntity>(id, companyId));
   }
 }

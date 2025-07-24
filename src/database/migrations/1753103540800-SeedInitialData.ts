@@ -1,11 +1,14 @@
 import { MigrationInterface, QueryRunner } from 'typeorm';
 import { faker } from '@faker-js/faker';
 import * as ids from '../seeds/seed-constants';
+import * as bcrypt from 'bcrypt';
 
 const escape = (s: string) => s.replace(/'/g, "''");
 
 export class SeedInitialData1753103540800 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
+    const hashed = await bcrypt.hash('password', 10);
+
     await queryRunner.query(`
       INSERT INTO "company" ("id", "name", "email") VALUES
         ('${ids.COMPANY_ID_1}', '${escape(faker.company.name())}', '${escape(faker.internet.email())}'),
@@ -14,12 +17,12 @@ export class SeedInitialData1753103540800 implements MigrationInterface {
 
     await queryRunner.query(`
       INSERT INTO "user" ("id", "company_id", "full_name", "email", "password", "role") VALUES
-        ('${ids.USER_ID_1}', '${ids.COMPANY_ID_1}', '${escape(faker.person.fullName())}', '${escape(faker.internet.email())}', 'password', 'admin'),
-        ('${ids.USER_ID_2}', '${ids.COMPANY_ID_1}', '${escape(faker.person.fullName())}', '${escape(faker.internet.email())}', 'password', 'user'),
-        ('${ids.USER_ID_3}', '${ids.COMPANY_ID_1}', '${escape(faker.person.fullName())}', '${escape(faker.internet.email())}', 'password', 'user'),
-        ('${ids.USER_ID_4}', '${ids.COMPANY_ID_2}', '${escape(faker.person.fullName())}', '${escape(faker.internet.email())}', 'password', 'admin'),
-        ('${ids.USER_ID_5}', '${ids.COMPANY_ID_2}', '${escape(faker.person.fullName())}', '${escape(faker.internet.email())}', 'password', 'user'),
-        ('${ids.USER_ID_6}', '${ids.COMPANY_ID_2}', '${escape(faker.person.fullName())}', '${escape(faker.internet.email())}', 'password', 'user');
+        ('${ids.USER_ID_1}', '${ids.COMPANY_ID_1}', '${escape(faker.person.fullName())}', '${escape(faker.internet.email())}','${hashed}' , 'owner'),
+        ('${ids.USER_ID_2}', '${ids.COMPANY_ID_1}', '${escape(faker.person.fullName())}', '${escape(faker.internet.email())}','${hashed}', 'operator'),
+        ('${ids.USER_ID_3}', '${ids.COMPANY_ID_1}', '${escape(faker.person.fullName())}', '${escape(faker.internet.email())}','${hashed}', 'viewer'),
+        ('${ids.USER_ID_4}', '${ids.COMPANY_ID_2}', '${escape(faker.person.fullName())}', '${escape(faker.internet.email())}','${hashed}', 'owner'),
+        ('${ids.USER_ID_5}', '${ids.COMPANY_ID_2}', '${escape(faker.person.fullName())}', '${escape(faker.internet.email())}','${hashed}', 'operator'),
+        ('${ids.USER_ID_6}', '${ids.COMPANY_ID_2}', '${escape(faker.person.fullName())}', '${escape(faker.internet.email())}','${hashed}', 'viewer');
     `);
 
     await queryRunner.query(`

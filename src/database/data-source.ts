@@ -1,5 +1,4 @@
 import { DataSource } from 'typeorm';
-import { config } from 'dotenv';
 import { Company } from '../entities/company/company.entity';
 import { User } from '../entities/user/user.entity';
 import { Partner } from '../entities/partner/partner.entity';
@@ -9,16 +8,19 @@ import { Order } from '../entities/order/order.entity';
 import { OrderItem } from '../entities/orderItem/orderItem.entity';
 import { Invoice } from '../entities/invoice/invoice.entity';
 
-config();
+import * as dotenv from 'dotenv';
+import { envSchema } from 'src/config/config.static';
+
+dotenv.config();
+const env = envSchema.parse(process.env);
 
 export const AppDataSource = new DataSource({
   type: 'postgres',
-  host: process.env.DB_HOST,
-  port: parseInt(process.env.DB_PORT || '5432'),
-  username: process.env.DB_USER,
-  password: process.env.DB_PASS,
-  database: process.env.DB_NAME,
-
+  host: env.DB_HOST,
+  port: env.DB_PORT,
+  username: env.DB_USER,
+  password: env.DB_PASS,
+  database: env.DB_NAME,
   entities: [
     Company,
     User,
@@ -29,7 +31,6 @@ export const AppDataSource = new DataSource({
     OrderItem,
     Invoice,
   ],
-
   migrations: ['src/database/migrations/**/*.ts'],
   migrationsRun: true,
   synchronize: false,

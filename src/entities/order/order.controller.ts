@@ -27,6 +27,9 @@ import {
   ApiParam,
   ApiTags,
 } from '@nestjs/swagger';
+import { Roles } from 'src/auth/decorators/roles.decorator';
+import { UserRole } from '../user/user.static';
+import { CustomMessage } from 'src/common/decorators/custom-message.decorator';
 
 @ApiTags('Orders')
 @ApiBearerAuth('Authorization')
@@ -36,12 +39,14 @@ export class OrderController extends BaseController<Order> {
     super(orderService);
   }
 
+  @CustomMessage('Orders retrieved successfully')
   @Get()
   @ApiOperation({ summary: "Get all orders for the current user's company" })
   findAll(@User() user: AuthUser) {
     return super.findAll(user);
   }
 
+  @CustomMessage('Order retrieved successfully')
   @Get(':id')
   @ApiOperation({ summary: 'Get a single order by ID' })
   @ApiParam({ name: 'id', description: 'Order UUID' })
@@ -52,7 +57,9 @@ export class OrderController extends BaseController<Order> {
     return super.findOne(params, user);
   }
 
+  @CustomMessage('Order created successfully')
   @Post()
+  @Roles(UserRole.OWNER, UserRole.OPERATOR)
   @ApiOperation({ summary: 'Create a new order' })
   @ApiBody({
     type: CreateOrderDto,
@@ -70,7 +77,9 @@ export class OrderController extends BaseController<Order> {
     return super.create(dto, user);
   }
 
+  @CustomMessage('Order updated successfully')
   @Put(':id')
+  @Roles(UserRole.OWNER, UserRole.OPERATOR)
   @ApiOperation({ summary: 'Update an order by ID' })
   @ApiParam({ name: 'id', description: 'Order UUID' })
   @ApiBody({
@@ -88,7 +97,9 @@ export class OrderController extends BaseController<Order> {
     return super.update(params, dto, user);
   }
 
+  @CustomMessage('Order soft-deleted successfully')
   @Delete(':id')
+  @Roles(UserRole.OWNER, UserRole.OPERATOR)
   @ApiOperation({ summary: 'Soft delete an order by ID' })
   @ApiParam({ name: 'id', description: 'Order UUID' })
   softDelete(
@@ -98,7 +109,9 @@ export class OrderController extends BaseController<Order> {
     return super.softDelete(params, user);
   }
 
+  @CustomMessage('Order permanently deleted')
   @Delete(':id/hard')
+  @Roles(UserRole.OWNER)
   @ApiOperation({ summary: 'Permanently delete an order by ID' })
   @ApiParam({ name: 'id', description: 'Order UUID' })
   hardDelete(

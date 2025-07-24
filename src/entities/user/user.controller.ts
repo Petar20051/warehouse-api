@@ -22,11 +22,14 @@ import {
   createUserSchema,
   UpdateUserDto,
   updateUserSchema,
+  UserRole,
 } from './user.static';
 import { ZodValidationPipe } from 'nestjs-zod';
 import { IdParamDto, idParamSchema } from 'src/common/types/id-param.static';
 import { User as UserDecorator } from 'src/auth/decorators/user.decorator';
 import { AuthUser } from 'src/common/types/auth-user';
+import { Roles } from 'src/auth/decorators/roles.decorator';
+import { CustomMessage } from 'src/common/decorators/custom-message.decorator';
 
 @ApiTags('Users')
 @ApiBearerAuth('Authorization')
@@ -36,12 +39,14 @@ export class UserController extends BaseController<User> {
     super(userService);
   }
 
+  @CustomMessage('Users retrieved successfully')
   @Get()
   @ApiOperation({ summary: "Get all users for the current user's company" })
   findAll(@UserDecorator() user: AuthUser) {
     return super.findAll(user);
   }
 
+  @CustomMessage('User retrieved successfully')
   @Get(':id')
   @ApiOperation({ summary: 'Get a single user by ID' })
   @ApiParam({ name: 'id', description: 'User UUID' })
@@ -52,7 +57,9 @@ export class UserController extends BaseController<User> {
     return super.findOne(params, user);
   }
 
+  @CustomMessage('User created successfully')
   @Post()
+  @Roles(UserRole.OWNER, UserRole.OPERATOR)
   @ApiOperation({ summary: 'Create a new user' })
   @ApiBody({
     type: CreateUserDto,
@@ -68,7 +75,9 @@ export class UserController extends BaseController<User> {
     return super.create(dto, user);
   }
 
+  @CustomMessage('User updated successfully')
   @Put(':id')
+  @Roles(UserRole.OWNER, UserRole.OPERATOR)
   @ApiOperation({ summary: 'Update a user by ID' })
   @ApiParam({ name: 'id', description: 'User UUID' })
   @ApiBody({
@@ -86,7 +95,9 @@ export class UserController extends BaseController<User> {
     return super.update(params, dto, user);
   }
 
+  @CustomMessage('User soft-deleted successfully')
   @Delete(':id')
+  @Roles(UserRole.OWNER, UserRole.OPERATOR)
   @ApiOperation({ summary: 'Soft delete a user by ID' })
   @ApiParam({ name: 'id', description: 'User UUID' })
   softDelete(
@@ -96,7 +107,9 @@ export class UserController extends BaseController<User> {
     return super.softDelete(params, user);
   }
 
+  @CustomMessage('User permanently deleted')
   @Delete(':id/hard')
+  @Roles(UserRole.OWNER)
   @ApiOperation({ summary: 'Permanently delete a user by ID' })
   @ApiParam({ name: 'id', description: 'User UUID' })
   hardDelete(

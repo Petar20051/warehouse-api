@@ -2,7 +2,6 @@ import {
   Injectable,
   UnauthorizedException,
   ConflictException,
-  NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -73,7 +72,7 @@ export class AuthService {
     const existingCompany = await this.companyRepo.findOne({
       where: { id: companyId },
     });
-    if (!existingCompany) throw new NotFoundException('Company not found');
+    if (!existingCompany) throw new Error('Company not found');
 
     const existingUser = await this.userRepo.findOne({
       where: { email },

@@ -9,6 +9,7 @@ export class User extends BaseEntity {
   companyId!: string;
 
   @ManyToOne(() => Company, (company) => company.users)
+  @JoinColumn({ name: 'company_id' })
   company!: Company;
 
   @Column({ type: 'varchar', length: 100 })

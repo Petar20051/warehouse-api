@@ -27,6 +27,9 @@ import {
   ApiParam,
   ApiTags,
 } from '@nestjs/swagger';
+import { Roles } from 'src/auth/decorators/roles.decorator';
+import { UserRole } from '../user/user.static';
+import { CustomMessage } from 'src/common/decorators/custom-message.decorator';
 
 @ApiTags('OrderItems')
 @ApiBearerAuth('Authorization')
@@ -36,6 +39,7 @@ export class OrderItemController extends BaseController<OrderItem> {
     super(orderItemService);
   }
 
+  @CustomMessage('Order items retrieved successfully')
   @Get()
   @ApiOperation({
     summary: "Get all order items for the current user's company",
@@ -44,6 +48,7 @@ export class OrderItemController extends BaseController<OrderItem> {
     return super.findAll(user);
   }
 
+  @CustomMessage('Order item retrieved successfully')
   @Get(':id')
   @ApiOperation({ summary: 'Get a single order item by ID' })
   @ApiParam({ name: 'id', description: 'OrderItem UUID' })
@@ -54,7 +59,9 @@ export class OrderItemController extends BaseController<OrderItem> {
     return super.findOne(params, user);
   }
 
+  @CustomMessage('Order item created successfully')
   @Post()
+  @Roles(UserRole.OWNER, UserRole.OPERATOR)
   @ApiOperation({ summary: 'Create a new order item' })
   @ApiBody({
     type: CreateOrderItemDto,
@@ -72,7 +79,9 @@ export class OrderItemController extends BaseController<OrderItem> {
     return super.create(dto, user);
   }
 
+  @CustomMessage('Order item updated successfully')
   @Put(':id')
+  @Roles(UserRole.OWNER, UserRole.OPERATOR)
   @ApiOperation({ summary: 'Update an order item by ID' })
   @ApiParam({ name: 'id', description: 'OrderItem UUID' })
   @ApiBody({
@@ -92,7 +101,9 @@ export class OrderItemController extends BaseController<OrderItem> {
     return super.update(params, dto, user);
   }
 
+  @CustomMessage('Order item soft-deleted successfully')
   @Delete(':id')
+  @Roles(UserRole.OWNER, UserRole.OPERATOR)
   @ApiOperation({ summary: 'Soft delete an order item by ID' })
   @ApiParam({ name: 'id', description: 'OrderItem UUID' })
   softDelete(
@@ -102,7 +113,9 @@ export class OrderItemController extends BaseController<OrderItem> {
     return super.softDelete(params, user);
   }
 
+  @CustomMessage('Order item permanently deleted')
   @Delete(':id/hard')
+  @Roles(UserRole.OWNER)
   @ApiOperation({ summary: 'Permanently delete an order item by ID' })
   @ApiParam({ name: 'id', description: 'OrderItem UUID' })
   hardDelete(

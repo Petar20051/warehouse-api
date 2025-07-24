@@ -1,10 +1,13 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { ConfigModule } from '@nestjs/config';
+import { SnakeNamingStrategy } from 'typeorm-naming-strategies';
+
+import { ConfigModule } from './config/config.module';
+import { ConfigService } from './config/config.service';
+
 import { CompanyModule } from './entities/company/company.module';
 import { UserModule } from './entities/user/user.module';
 import { AuthModule } from './auth/auth.module';
-import { SnakeNamingStrategy } from 'typeorm-naming-strategies';
 import { WarehouseModule } from './entities/warehouse/warehouse.module';
 import { ProductModule } from './entities/product/product.module';
 import { PartnerModule } from './entities/partner/partner.module';
@@ -14,19 +17,22 @@ import { InvoiceModule } from './entities/invoice/invoice.module';
 
 @Module({
   imports: [
-    ConfigModule.forRoot({ isGlobal: true }),
-    TypeOrmModule.forRoot({
-      type: 'postgres',
-      host: process.env.DB_HOST,
-      port: parseInt(process.env.DB_PORT || '5432'),
-      username: process.env.DB_USER,
-      password: process.env.DB_PASS,
-      database: process.env.DB_NAME,
-      migrations: ['src/database/migrations/**/*.ts'],
-      migrationsRun: true,
-      autoLoadEntities: true,
-      synchronize: false,
-      namingStrategy: new SnakeNamingStrategy(),
+    ConfigModule,
+    TypeOrmModule.forRootAsync({
+      inject: [ConfigService],
+      useFactory: (config: ConfigService) => ({
+        type: 'postgres',
+        host: config.get('DB_HOST'),
+        port: config.get('DB_PORT'),
+        username: config.get('DB_USER'),
+        password: config.get('DB_PASS'),
+        database: config.get('DB_NAME'),
+        migrations: ['src/database/migrations/**/*.ts'],
+        migrationsRun: true,
+        autoLoadEntities: true,
+        synchronize: false,
+        namingStrategy: new SnakeNamingStrategy(),
+      }),
     }),
     AuthModule,
     CompanyModule,
