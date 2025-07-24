@@ -4,18 +4,16 @@ export enum UserRole {
   VIEWER = 'viewer',
 }
 
+import { createZodDto } from 'nestjs-zod';
 import { z } from 'zod';
 
 export const createUserSchema = z.object({
-  fullName: z.string().min(1),
+  fullName: z.string().min(2).max(64),
   email: z.email(),
-  password: z.string().min(6),
+  password: z.string().min(8).max(64),
   role: z.enum(UserRole),
-  companyId: z.uuid(),
 });
-
 export const updateUserSchema = createUserSchema.partial();
 
-export const userIdParamSchema = z.object({
-  id: z.uuid(),
-});
+export class CreateUserDto extends createZodDto(createUserSchema) {}
+export class UpdateUserDto extends createZodDto(updateUserSchema) {}

@@ -4,7 +4,6 @@ export const jwtConstants = {
 
 export const AuthMessages = {
   invalidCredentials: 'Invalid email or password',
-  emailTaken: 'Email is already in use',
 };
 
 import { z } from 'zod';

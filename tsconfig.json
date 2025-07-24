@@ -15,8 +15,11 @@
 
     "sourceMap": true,
     "outDir": "./dist",
-    "baseUrl": "./"
+    "baseUrl": "./",
+    "paths": {
+      "src/*": ["src/*"]
+    }
   },
-  "include": ["src/**/*.ts"],
+  "include": ["src/**/*.ts", "ormconfig.js"],
   "exclude": ["node_modules", "dist"]
 }

@@ -9,7 +9,7 @@ import { BaseService } from 'src/common/services/base.service';
 type BestSellingProduct = {
   productId: string;
   title: string;
-  totalSold: string; // Returned as string from SQL
+  totalSold: string;
 };
 
 @Injectable()

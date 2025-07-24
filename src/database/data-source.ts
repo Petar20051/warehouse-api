@@ -1,29 +1,37 @@
 import { DataSource } from 'typeorm';
 import { config } from 'dotenv';
-import { PostgresConnectionOptions } from 'typeorm/driver/postgres/PostgresConnectionOptions';
+import { Company } from '../entities/company/company.entity';
+import { User } from '../entities/user/user.entity';
+import { Partner } from '../entities/partner/partner.entity';
+import { Warehouse } from '../entities/warehouse/warehouse.entity';
+import { Product } from '../entities/product/product.entity';
+import { Order } from '../entities/order/order.entity';
+import { OrderItem } from '../entities/orderItem/orderItem.entity';
+import { Invoice } from '../entities/invoice/invoice.entity';
+
 config();
 
-interface SeederDataSourceOptions extends PostgresConnectionOptions {
-  factories?: string[];
-  seeds?: string[];
-}
-
-const dataSourceOptions: SeederDataSourceOptions = {
+export const AppDataSource = new DataSource({
   type: 'postgres',
   host: process.env.DB_HOST,
-  port: parseInt(process.env.DB_PORT || '5432', 10),
+  port: parseInt(process.env.DB_PORT || '5432'),
   username: process.env.DB_USER,
   password: process.env.DB_PASS,
   database: process.env.DB_NAME,
 
-  entities: ['dist/**/*.entity.js'],
-  migrations: ['dist/src/database/migrations/*.js'],
+  entities: [
+    Company,
+    User,
+    Partner,
+    Warehouse,
+    Product,
+    Order,
+    OrderItem,
+    Invoice,
+  ],
 
-  factories: ['dist/src/database/factories/**/*{.js,.ts}'],
-  seeds: ['dist/src/database/seeds/**/*{.js,.ts}'],
-
+  migrations: ['src/database/migrations/**/*.ts'],
+  migrationsRun: true,
   synchronize: false,
   logging: true,
-};
-
-export const AppDataSource = new DataSource(dataSourceOptions);
+});

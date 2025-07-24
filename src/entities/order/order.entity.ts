@@ -1,7 +1,8 @@
-import { Entity, Column, ManyToOne, JoinColumn } from 'typeorm';
+import { Entity, Column, ManyToOne, OneToOne, JoinColumn } from 'typeorm';
 import { Company } from '../company/company.entity';
 import { Warehouse } from '../warehouse/warehouse.entity';
 import { Partner } from '../partner/partner.entity';
+import { Invoice } from '../invoice/invoice.entity';
 import { BaseEntity } from 'src/common/entities/base.entity';
 import { User } from '../user/user.entity';
 
@@ -9,9 +10,6 @@ export type OrderType = 'shipment' | 'delivery';
 
 @Entity({ name: 'order' })
 export class Order extends BaseEntity {
-  @Column({ type: 'uuid' })
-  companyId!: string;
-
   @ManyToOne(() => Company, (company) => company.orders)
   @JoinColumn({ name: 'company_id' })
   company!: Company;
@@ -19,15 +17,9 @@ export class Order extends BaseEntity {
   @Column({ type: 'enum', enum: ['shipment', 'delivery'] })
   orderType!: OrderType;
 
-  @Column({ type: 'uuid', nullable: true })
-  partnerId!: string | null;
-
   @ManyToOne(() => Partner, (partner) => partner.orders, { nullable: true })
   @JoinColumn({ name: 'partner_id' })
-  partner!: Partner;
-
-  @Column({ type: 'uuid' })
-  warehouseId!: string;
+  partner!: Partner | null;
 
   @ManyToOne(() => Warehouse, (warehouse) => warehouse.orders)
   @JoinColumn({ name: 'warehouse_id' })
@@ -42,4 +34,7 @@ export class Order extends BaseEntity {
   @ManyToOne(() => User, { nullable: true })
   @JoinColumn({ name: 'modified_by_user_id' })
   modifiedBy?: User;
+
+  @OneToOne(() => Invoice, (invoice) => invoice.order)
+  invoice!: Invoice;
 }

@@ -32,7 +32,7 @@ export class AuthService {
     const existing = await this.userRepo.findOne({
       where: { email: data.email },
     });
-    if (existing) throw new ConflictException(AuthMessages.emailTaken);
+    if (existing) throw new ConflictException(AuthMessages.invalidCredentials);
 
     const hashed = await bcrypt.hash(data.password, 10);
 

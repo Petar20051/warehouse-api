@@ -1,4 +1,4 @@
-import { Body, Controller, HttpCode, Post } from '@nestjs/common';
+import { Body, Controller, HttpCode, Post, UseGuards } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBody } from '@nestjs/swagger';
 import { AuthService } from './auth.service';
 import {
@@ -6,6 +6,10 @@ import {
   RegisterSchema,
   RegisterUserToCompanySchema,
 } from './auth.static';
+import { JwtAuthGuard } from './guards/jwt-auth.guard';
+import { RolesGuard } from './guards/roles.guard';
+import { Roles } from './decorators/roles.decorator';
+import { UserRole } from 'src/entities/user/user.static';
 
 @ApiTags('Auth')
 @Controller('auth')
@@ -17,11 +21,11 @@ export class AuthController {
   @ApiBody({
     schema: {
       example: {
-        companyName: 'Yara Inc',
-        companyEmail: 'admin@yara.com',
-        fullName: 'Petar Petrov',
-        email: 'petar@yara.com',
-        password: 'securePassword123',
+        companyName: '',
+        companyEmail: '',
+        fullName: '',
+        email: '',
+        password: '',
       },
     },
   })
@@ -36,8 +40,8 @@ export class AuthController {
   @ApiBody({
     schema: {
       example: {
-        email: 'gosho@yara.com',
-        password: 'viewer123',
+        email: '',
+        password: '',
       },
     },
   })
@@ -45,7 +49,8 @@ export class AuthController {
     const data = LoginSchema.parse(body);
     return this.authService.login(data);
   }
-
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.OPERATOR, UserRole.OWNER)
   @Post('register-user')
   @ApiOperation({
     summary: 'Register a user to an existing company (default: viewer)',
@@ -53,10 +58,10 @@ export class AuthController {
   @ApiBody({
     schema: {
       example: {
-        companyId: '57403e6c-ca90-4b2a-9222-f4b69d2207ca',
-        fullName: 'Gosho Viewer',
-        email: 'gosho@yara.com',
-        password: 'viewer123',
+        companyId: '',
+        fullName: '',
+        email: '',
+        password: '',
       },
     },
   })

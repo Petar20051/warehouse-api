@@ -1,4 +1,4 @@
-import { Entity, Column, ManyToOne, JoinColumn } from 'typeorm';
+import { Entity, Column, OneToOne, JoinColumn, ManyToOne } from 'typeorm';
 import { Order } from '../order/order.entity';
 import { BaseEntity } from 'src/common/entities/base.entity';
 import { User } from '../user/user.entity';
@@ -14,10 +14,7 @@ export class Invoice extends BaseEntity {
   @Column({ name: 'invoice_number', type: 'varchar', length: 50 })
   invoiceNumber!: string;
 
-  @Column({ name: 'order_id', type: 'uuid' })
-  orderId!: string;
-
-  @ManyToOne(() => Order)
+  @OneToOne(() => Order, (order) => order.invoice)
   @JoinColumn({ name: 'order_id' })
   order!: Order;
 

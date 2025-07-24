@@ -1,68 +1,59 @@
-import {
-  Get,
-  Post,
-  Patch,
-  Delete,
-  Param,
-  Body,
-  Req,
-  HttpCode,
-  HttpStatus,
-  UseGuards,
-} from '@nestjs/common';
+import { Param, Body, UseGuards } from '@nestjs/common';
 import { DeepPartial } from 'typeorm';
 import { BaseService } from '../services/base.service';
-import { AuthRequest } from '../types/auth-request';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 import { RolesGuard } from 'src/auth/guards/roles.guard';
 import { Roles } from 'src/auth/decorators/roles.decorator';
 import { UserRole } from 'src/entities/user/user.static';
 import { ApiBearerAuth } from '@nestjs/swagger';
+import { IdParamDto, idParamSchema } from '../types/id-param.static';
+import { ZodValidationPipe } from 'nestjs-zod';
+import { User } from 'src/auth/decorators/user.decorator';
+import { AuthUser } from '../types/auth-user';
 
 @ApiBearerAuth('Authorization')
 @UseGuards(JwtAuthGuard, RolesGuard)
 export class BaseController<T extends { id: string; companyId?: string }> {
   constructor(protected readonly service: BaseService<T>) {}
 
-  @Get()
-  @Roles(UserRole.VIEWER, UserRole.OPERATOR, UserRole.OWNER)
-  findAll(@Req() req: AuthRequest) {
-    return this.service.findAllByCompany(req.user.companyId);
+  findAll(@User() user: AuthUser) {
+    return this.service.findAllByCompany(user.companyId);
   }
 
-  @Get(':id')
-  @Roles(UserRole.VIEWER, UserRole.OPERATOR, UserRole.OWNER)
-  findOne(@Param('id') id: string, @Req() req: AuthRequest) {
-    return this.service.findOne(id, req.user.companyId);
+  findOne(
+    @Param(new ZodValidationPipe(idParamSchema)) params: IdParamDto,
+    @User() user: AuthUser,
+  ) {
+    return this.service.findOne(params.id, user.companyId);
   }
 
-  @Post()
   @Roles(UserRole.OPERATOR, UserRole.OWNER)
-  create(@Body() dto: DeepPartial<T>, @Req() req: AuthRequest) {
-    return this.service.createWithUserContext(dto, req.user);
+  create(@Body() dto: DeepPartial<T>, @User() user: AuthUser) {
+    return this.service.createWithUserContext(dto, user);
   }
 
-  @Patch(':id')
   @Roles(UserRole.OPERATOR, UserRole.OWNER)
   update(
-    @Param('id') id: string,
+    @Param(new ZodValidationPipe(idParamSchema)) params: IdParamDto,
     @Body() dto: DeepPartial<T>,
-    @Req() req: AuthRequest,
+    @User() user: AuthUser,
   ) {
-    return this.service.updateWithUserContext(id, dto, req.user);
+    return this.service.updateWithUserContext(params.id, dto, user);
   }
 
-  @Delete(':id')
-  @HttpCode(HttpStatus.NO_CONTENT)
   @Roles(UserRole.OPERATOR, UserRole.OWNER)
-  softDelete(@Param('id') id: string, @Req() req: AuthRequest) {
-    return this.service.softDelete(id, req.user.companyId);
+  softDelete(
+    @Param(new ZodValidationPipe(idParamSchema)) params: IdParamDto,
+    @User() user: AuthUser,
+  ) {
+    return this.service.softDelete(params.id, user.companyId);
   }
 
-  @Delete(':id/hard')
-  @HttpCode(HttpStatus.NO_CONTENT)
   @Roles(UserRole.OWNER)
-  hardDelete(@Param('id') id: string, @Req() req: AuthRequest) {
-    return this.service.hardDelete(id, req.user.companyId);
+  hardDelete(
+    @Param(new ZodValidationPipe(idParamSchema)) params: IdParamDto,
+    @User() user: AuthUser,
+  ) {
+    return this.service.hardDelete(params.id, user.companyId);
   }
 }

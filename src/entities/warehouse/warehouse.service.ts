@@ -33,28 +33,23 @@ export class WarehouseService extends BaseService<Warehouse> {
       .addSelect(
         `SUM(
            CASE
-             WHEN order.orderType = 'delivery' THEN orderitem.quantity
-             WHEN order.orderType = 'shipment' THEN -orderitem.quantity
+             WHEN "order"."order_type" = 'delivery' THEN orderitem.quantity
+             WHEN "order"."order_type" = 'shipment' THEN -orderitem.quantity
              ELSE 0
            END
          )`,
         'stock',
       )
-
-      .where('order.companyId = :companyId', { companyId })
-
-      .andWhere('warehouse.companyId = :companyId', { companyId })
-
-      .andWhere('order.deletedAt IS NULL')
-      .andWhere('orderitem.deletedAt IS NULL')
-      .andWhere('product.deletedAt IS NULL')
-      .andWhere('warehouse.deletedAt IS NULL')
-
+      .where('"order"."company_id" = :companyId', { companyId })
+      .andWhere('warehouse."company_id" = :companyId', { companyId })
+      .andWhere('"order"."deleted_at" IS NULL')
+      .andWhere('orderitem."deleted_at" IS NULL')
+      .andWhere('product."deleted_at" IS NULL')
+      .andWhere('warehouse."deleted_at" IS NULL')
       .groupBy('warehouse.id')
       .addGroupBy('warehouse.name')
       .addGroupBy('product.id')
       .addGroupBy('product.name')
-
       .orderBy('warehouse.name')
       .addOrderBy('stock', 'DESC')
       .getRawMany<WarehouseTopStock>();
