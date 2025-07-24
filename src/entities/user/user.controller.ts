@@ -16,7 +16,6 @@ import {
 } from '@nestjs/swagger';
 import { User } from './user.entity';
 import { UserService } from './user.service';
-import { BaseController } from 'src/common/controller/base.controller';
 import {
   CreateUserDto,
   createUserSchema,
@@ -30,11 +29,17 @@ import { User as UserDecorator } from 'src/auth/decorators/user.decorator';
 import { AuthUser } from 'src/common/types/auth-user';
 import { Roles } from 'src/auth/decorators/roles.decorator';
 import { CustomMessage } from 'src/common/decorators/custom-message.decorator';
+import { BaseController } from 'src/common/controller/base.controller';
+import { DeepPartial } from 'typeorm';
 
 @ApiTags('Users')
 @ApiBearerAuth('Authorization')
 @Controller('users')
-export class UserController extends BaseController<User> {
+export class UserController extends BaseController<
+  User,
+  CreateUserDto,
+  UpdateUserDto
+> {
   constructor(private readonly userService: UserService) {
     super(userService);
   }
@@ -92,7 +97,7 @@ export class UserController extends BaseController<User> {
     @Body(new ZodValidationPipe(updateUserSchema)) dto: UpdateUserDto,
     @UserDecorator() user: AuthUser,
   ) {
-    return super.update(params, dto, user);
+    return super.update(params, dto as DeepPartial<User>, user);
   }
 
   @CustomMessage('User soft-deleted successfully')

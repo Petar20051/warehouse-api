@@ -16,7 +16,6 @@ import {
 } from '@nestjs/swagger';
 import { Warehouse } from './warehouse.entity';
 import { WarehouseService } from './warehouse.service';
-import { BaseController } from 'src/common/controller/base.controller';
 import {
   CreateWarehouseDto,
   createWarehouseSchema,
@@ -30,6 +29,7 @@ import { AuthUser } from 'src/common/types/auth-user';
 import { Roles } from 'src/auth/decorators/roles.decorator';
 import { UserRole } from '../user/user.static';
 import { CustomMessage } from 'src/common/decorators/custom-message.decorator';
+import { BaseController } from 'src/common/controller/base.controller';
 
 @ApiTags('Warehouses')
 @ApiBearerAuth('Authorization')
@@ -37,6 +37,13 @@ import { CustomMessage } from 'src/common/decorators/custom-message.decorator';
 export class WarehouseController extends BaseController<Warehouse> {
   constructor(private readonly warehouseService: WarehouseService) {
     super(warehouseService);
+  }
+
+  @CustomMessage('Warehouse top stock data retrieved successfully')
+  @Get('top-stock')
+  @ApiOperation({ summary: 'Get product with highest stock per warehouse' })
+  getProductWithHighestStock(@User() user: AuthUser) {
+    return this.warehouseService.getProductWithHighestStock(user.companyId);
   }
 
   @CustomMessage('Warehouses retrieved successfully')
@@ -119,12 +126,5 @@ export class WarehouseController extends BaseController<Warehouse> {
     @User() user: AuthUser,
   ) {
     return super.hardDelete(params, user);
-  }
-
-  @CustomMessage('Warehouse top stock data retrieved successfully')
-  @Get('top-stock')
-  @ApiOperation({ summary: 'Get product with highest stock per warehouse' })
-  getProductWithHighestStock(@User() user: AuthUser) {
-    return this.warehouseService.getProductWithHighestStock(user.companyId);
   }
 }

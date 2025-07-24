@@ -2,8 +2,8 @@ import { createZodDto } from 'nestjs-zod';
 import { z } from 'zod';
 
 export const createOrderItemSchema = z.object({
-  orderId: z.uuid(),
-  productId: z.uuid(),
+  orderId: z.string().uuid(),
+  productId: z.string().uuid(),
   quantity: z.number().int().min(1),
   unitPrice: z.number().min(0),
 });

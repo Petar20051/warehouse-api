@@ -11,7 +11,11 @@ import { AuthUser } from '../types/auth-user';
 
 @ApiBearerAuth('Authorization')
 @UseGuards(JwtAuthGuard, RolesGuard)
-export class BaseController<T extends { id: string; companyId?: string }> {
+export class BaseController<
+  T extends { id: string; companyId?: string },
+  CreateDto extends DeepPartial<T> = DeepPartial<T>,
+  UpdateDto extends DeepPartial<T> = DeepPartial<T>,
+> {
   constructor(protected readonly service: BaseService<T>) {}
 
   findAll(@User() user: AuthUser) {
@@ -25,13 +29,13 @@ export class BaseController<T extends { id: string; companyId?: string }> {
     return this.service.findOne(params.id, user.companyId);
   }
 
-  create(@Body() dto: DeepPartial<T>, @User() user: AuthUser) {
+  create(@Body() dto: CreateDto, @User() user: AuthUser) {
     return this.service.createWithUserContext(dto, user);
   }
 
   update(
     @Param(new ZodValidationPipe(idParamSchema)) params: IdParamDto,
-    @Body() dto: DeepPartial<T>,
+    @Body() dto: UpdateDto,
     @User() user: AuthUser,
   ) {
     return this.service.updateWithUserContext(params.id, dto, user);

@@ -3,7 +3,7 @@ import { createZodDto } from 'nestjs-zod';
 
 export const createCompanySchema = z.object({
   name: z.string().min(2).max(64),
-  email: z.email(),
+  email: z.string().email(),
 });
 export class CreateCompanyDto extends createZodDto(createCompanySchema) {}
 

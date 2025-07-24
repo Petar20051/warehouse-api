@@ -8,7 +8,6 @@ import {
   Put,
 } from '@nestjs/common';
 
-import { BaseController } from 'src/common/controller/base.controller';
 import { Product } from './product.entity';
 import { ProductService } from './product.service';
 import { ZodValidationPipe } from 'nestjs-zod';
@@ -31,6 +30,7 @@ import {
 import { Roles } from 'src/auth/decorators/roles.decorator';
 import { UserRole } from '../user/user.static';
 import { CustomMessage } from 'src/common/decorators/custom-message.decorator';
+import { BaseController } from 'src/common/controller/base.controller';
 
 @ApiTags('Products')
 @ApiBearerAuth('Authorization')
@@ -38,6 +38,14 @@ import { CustomMessage } from 'src/common/decorators/custom-message.decorator';
 export class ProductController extends BaseController<Product> {
   constructor(private readonly productService: ProductService) {
     super(productService);
+  }
+
+  @CustomMessage('Top 5 best-selling products retrieved successfully')
+  @Get('/best-selling')
+  @ApiOperation({ summary: 'Get top 5 best-selling products' })
+  getBestSellingProducts(@User('companyId') companyId: string) {
+    console.log('Received companyId:', companyId);
+    return this.productService.getBestSellingProducts(companyId);
   }
 
   @CustomMessage('Products retrieved successfully')
@@ -118,12 +126,5 @@ export class ProductController extends BaseController<Product> {
     @User() user: AuthUser,
   ) {
     return super.hardDelete(params, user);
-  }
-
-  @CustomMessage('Top 5 best-selling products retrieved successfully')
-  @Get('best-selling')
-  @ApiOperation({ summary: 'Get top 5 best-selling products' })
-  getBestSellingProducts(@User() user: AuthUser) {
-    return this.productService.getBestSellingProducts(user.companyId);
   }
 }

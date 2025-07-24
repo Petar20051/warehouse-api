@@ -18,24 +18,23 @@ export class PartnerService extends BaseService<Partner> {
     super(partnerRepo);
   }
 
-  async getTopCustomerByOrders(companyId: string): Promise<TopCustomerResult> {
-    const result = await this.partnerRepo
+  async getTopCustomerByOrders(
+    companyId: string,
+  ): Promise<TopCustomerResult | null> {
+    const raw = await this.partnerRepo
       .createQueryBuilder('partner')
       .leftJoin('partner.orders', 'order')
       .select('partner.id', 'partnerId')
       .addSelect('partner.name', 'name')
-      .addSelect('COUNT(order.id)', 'totalorders')
+      .addSelect('COUNT(order.id)', 'totalOrders')
       .where('partner.companyId = :companyId', { companyId })
+      .andWhere('partner.type = :type', { type: 'customer' })
       .andWhere('order.deletedAt IS NULL')
       .groupBy('partner.id')
-      .orderBy('totalOrders', 'DESC')
+      .orderBy('COUNT(order.id)', 'DESC')
       .limit(1)
       .getRawOne<TopCustomerResult>();
 
-    if (!result) {
-      throw new Error('No top customer found');
-    }
-
-    return result;
+    return raw ?? null;
   }
 }

@@ -7,7 +7,7 @@ import {
   Put,
   Delete,
 } from '@nestjs/common';
-import { BaseController } from 'src/common/controller/base.controller';
+
 import { Partner } from './partner.entity';
 import { PartnerService } from './partner.service';
 import { ZodValidationPipe } from 'nestjs-zod';
@@ -30,6 +30,7 @@ import {
 import { Roles } from 'src/auth/decorators/roles.decorator';
 import { UserRole } from '../user/user.static';
 import { CustomMessage } from 'src/common/decorators/custom-message.decorator';
+import { BaseController } from 'src/common/controller/base.controller';
 
 @ApiTags('Partners')
 @ApiBearerAuth('Authorization')
@@ -37,6 +38,13 @@ import { CustomMessage } from 'src/common/decorators/custom-message.decorator';
 export class PartnerController extends BaseController<Partner> {
   constructor(private readonly partnerService: PartnerService) {
     super(partnerService);
+  }
+
+  @CustomMessage('Top customer retrieved successfully')
+  @Get('top-customer')
+  @ApiOperation({ summary: 'Get top customer based on number of orders' })
+  getTopCustomerByOrders(@User() user: AuthUser) {
+    return this.partnerService.getTopCustomerByOrders(user.companyId);
   }
 
   @CustomMessage('Partners retrieved successfully')
@@ -135,12 +143,5 @@ export class PartnerController extends BaseController<Partner> {
     @User() user: AuthUser,
   ) {
     return super.hardDelete(params, user);
-  }
-
-  @CustomMessage('Top customer retrieved successfully')
-  @Get('top-customer')
-  @ApiOperation({ summary: 'Get top customer based on number of orders' })
-  getTopCustomerByOrders(@User() user: AuthUser) {
-    return this.partnerService.getTopCustomerByOrders(user.companyId);
   }
 }

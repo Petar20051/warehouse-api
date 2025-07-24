@@ -1,4 +1,8 @@
-import { Injectable, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  BadRequestException,
+  ForbiddenException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, DataSource } from 'typeorm';
 import { OrderItem } from './orderItem.entity';
@@ -23,6 +27,13 @@ export class OrderItemService extends BaseService<OrderItem> {
     super(repo);
   }
 
+  override async findOne(
+    id: string,
+    companyId: string,
+  ): Promise<OrderItem | null> {
+    return this.findOneSecure(id, companyId);
+  }
+
   override async createWithUserContext(
     dto: CreateOrderItemShape,
     user: AuthUser,
@@ -41,8 +52,9 @@ export class OrderItemService extends BaseService<OrderItem> {
     dto: UpdateOrderItemShape,
     user: AuthUser,
   ): Promise<OrderItem | null> {
-    const existing = await this.repo.findOne({ where: { id } });
-    if (!existing) throw new Error('Order item not found');
+    const existing = await this.findOneSecure(id, user.companyId);
+    if (!existing)
+      throw new ForbiddenException('Order item not found or access denied');
 
     const updated: Partial<OrderItem> = {
       ...existing,
@@ -53,6 +65,22 @@ export class OrderItemService extends BaseService<OrderItem> {
     await this.runAllValidations(updated);
     Object.assign(existing, updated);
     return this.repo.save(existing);
+  }
+
+  override async softDelete(id: string, companyId: string): Promise<void> {
+    const item = await this.findOneSecure(id, companyId);
+    if (!item)
+      throw new ForbiddenException('Order item not found or access denied');
+
+    await this.repo.softDelete({ id });
+  }
+
+  override async hardDelete(id: string, companyId: string): Promise<void> {
+    const item = await this.findOneSecure(id, companyId);
+    if (!item)
+      throw new ForbiddenException('Order item not found or access denied');
+
+    await this.repo.delete({ id });
   }
 
   private async runAllValidations(dto: Partial<CreateOrderItemShape>) {
@@ -154,5 +182,20 @@ export class OrderItemService extends BaseService<OrderItem> {
         `Insufficient stock: Available ${availableStock}, Attempted shipment ${dto.quantity}`,
       );
     }
+  }
+
+  private async findOneSecure(
+    id: string,
+    companyId: string,
+  ): Promise<OrderItem | null> {
+    return this.repo.findOne({
+      where: {
+        id,
+        order: {
+          company: { id: companyId },
+        },
+      },
+      relations: ['order', 'order.company'],
+    });
   }
 }

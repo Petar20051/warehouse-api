@@ -9,7 +9,6 @@ import {
 } from '@nestjs/common';
 import { Order } from './order.entity';
 import { OrderService } from './order.service';
-import { BaseController } from 'src/common/controller/base.controller';
 import {
   CreateOrderDto,
   createOrderSchema,
@@ -30,6 +29,7 @@ import {
 import { Roles } from 'src/auth/decorators/roles.decorator';
 import { UserRole } from '../user/user.static';
 import { CustomMessage } from 'src/common/decorators/custom-message.decorator';
+import { BaseController } from 'src/common/controller/base.controller';
 
 @ApiTags('Orders')
 @ApiBearerAuth('Authorization')

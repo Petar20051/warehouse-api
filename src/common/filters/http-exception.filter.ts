@@ -2,9 +2,11 @@ import {
   ExceptionFilter,
   Catch,
   ArgumentsHost,
+  HttpException,
   HttpStatus,
 } from '@nestjs/common';
 import { Request, Response } from 'express';
+import { ZodError } from 'zod';
 
 @Catch()
 export class HttpExceptionFilter implements ExceptionFilter {
@@ -14,24 +16,32 @@ export class HttpExceptionFilter implements ExceptionFilter {
     const request = ctx.getRequest<Request>();
 
     let status = HttpStatus.INTERNAL_SERVER_ERROR;
-    let message = 'Internal server error';
+    let message: string | string[] = 'Internal server error';
 
-    if (
-      typeof exception === 'object' &&
-      exception !== null &&
-      'statusCode' in exception &&
-      typeof (exception as { statusCode: unknown }).statusCode === 'number'
-    ) {
-      status = (exception as { statusCode: number }).statusCode;
-    }
+    if (exception instanceof ZodError) {
+      status = HttpStatus.BAD_REQUEST;
+      message = exception.issues.map((issue) => {
+        const path = issue.path.join('.') || 'field';
+        return `${path}: ${issue.message}`;
+      });
+    } else if (exception instanceof HttpException) {
+      status = exception.getStatus();
+      const responseBody = exception.getResponse();
 
-    if (
-      typeof exception === 'object' &&
-      exception !== null &&
-      'message' in exception &&
-      typeof (exception as { message: unknown }).message === 'string'
-    ) {
-      message = (exception as { message: string }).message;
+      if (typeof responseBody === 'string') {
+        message = responseBody;
+      } else if (
+        typeof responseBody === 'object' &&
+        responseBody !== null &&
+        'message' in responseBody
+      ) {
+        const msg = (responseBody as { message?: unknown }).message;
+        if (typeof msg === 'string' || Array.isArray(msg)) {
+          message = msg;
+        }
+      }
+    } else if (exception instanceof Error) {
+      message = exception.message;
     }
 
     response.status(status).json({

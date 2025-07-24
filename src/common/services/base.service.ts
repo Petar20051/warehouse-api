@@ -1,3 +1,4 @@
+import { ForbiddenException } from '@nestjs/common';
 import { Repository, DeepPartial, FindOptionsWhere } from 'typeorm';
 import { AuthUser } from '../types/auth-user';
 
@@ -7,11 +8,10 @@ function whereCompany<TEntity extends { companyId?: string }>(
   return { companyId } as FindOptionsWhere<TEntity>;
 }
 
-function whereIdAndCompany<TEntity extends { id: string; companyId?: string }>(
+function whereId<TEntity extends { id: string }>(
   id: string,
-  companyId: string,
 ): FindOptionsWhere<TEntity> {
-  return { id, companyId } as FindOptionsWhere<TEntity>;
+  return { id } as FindOptionsWhere<TEntity>;
 }
 
 export class BaseService<
@@ -28,9 +28,11 @@ export class BaseService<
   }
 
   async findOne(id: string, companyId: string): Promise<TEntity | null> {
-    return this.repo.findOne({
-      where: whereIdAndCompany<TEntity>(id, companyId),
-    });
+    const entity = await this.repo.findOne({ where: whereId<TEntity>(id) });
+
+    this.assertCompanyAccess(entity, companyId);
+
+    return entity;
   }
 
   async createWithUserContext(
@@ -51,13 +53,11 @@ export class BaseService<
     data: TUpdateDto,
     user: AuthUser,
   ): Promise<TEntity | null> {
-    const existing = await this.repo.findOne({
-      where: whereIdAndCompany<TEntity>(id, user.companyId),
-    });
+    const entity = await this.repo.findOne({ where: whereId<TEntity>(id) });
 
-    if (!existing) throw new Error('Entity not found');
+    this.assertCompanyAccess(entity, user.companyId);
 
-    const updated = this.repo.merge(existing, {
+    const updated = this.repo.merge(entity!, {
       ...data,
       modifiedByUserId: user.userId,
     } as DeepPartial<TEntity>);
@@ -66,10 +66,39 @@ export class BaseService<
   }
 
   async softDelete(id: string, companyId: string): Promise<void> {
-    await this.repo.softDelete(whereIdAndCompany<TEntity>(id, companyId));
+    const entity = await this.repo.findOne({ where: whereId<TEntity>(id) });
+
+    this.assertCompanyAccess(entity, companyId);
+
+    await this.repo.softDelete(id);
   }
 
   async hardDelete(id: string, companyId: string): Promise<void> {
-    await this.repo.delete(whereIdAndCompany<TEntity>(id, companyId));
+    const entity = await this.repo.findOne({ where: whereId<TEntity>(id) });
+
+    this.assertCompanyAccess(entity, companyId);
+
+    await this.repo.delete(id);
+  }
+
+  private assertCompanyAccess(
+    entity: TEntity | null,
+    expectedCompanyId: string,
+  ) {
+    if (!entity) {
+      throw new ForbiddenException('Entity not found or access denied');
+    }
+
+    if (!('companyId' in entity)) {
+      throw new ForbiddenException(
+        'Entity is missing company context and cannot be verified',
+      );
+    }
+
+    if (entity.companyId !== expectedCompanyId) {
+      throw new ForbiddenException(
+        'Access to resource from another company is denied',
+      );
+    }
   }
 }

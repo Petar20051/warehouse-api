@@ -7,7 +7,6 @@ import {
   Put,
   Delete,
 } from '@nestjs/common';
-import { BaseController } from 'src/common/controller/base.controller';
 import { ZodValidationPipe } from 'nestjs-zod';
 import { IdParamDto, idParamSchema } from 'src/common/types/id-param.static';
 import { Invoice } from './invoice.entity';
@@ -30,11 +29,16 @@ import {
 import { Roles } from 'src/auth/decorators/roles.decorator';
 import { UserRole } from '../user/user.static';
 import { CustomMessage } from 'src/common/decorators/custom-message.decorator';
+import { BaseController } from 'src/common/controller/base.controller';
 
 @ApiTags('Invoices')
 @ApiBearerAuth('Authorization')
 @Controller('invoices')
-export class InvoiceController extends BaseController<Invoice> {
+export class InvoiceController extends BaseController<
+  Invoice,
+  CreateInvoiceDto,
+  UpdateInvoiceDto
+> {
   constructor(private readonly invoiceService: InvoiceService) {
     super(invoiceService);
   }

@@ -9,9 +9,9 @@ import { z } from 'zod';
 
 export const createUserSchema = z.object({
   fullName: z.string().min(2).max(64),
-  email: z.email(),
+  email: z.string().email(),
   password: z.string().min(8).max(64),
-  role: z.enum(UserRole),
+  role: z.nativeEnum(UserRole),
 });
 export const updateUserSchema = createUserSchema.partial();
 

@@ -1,11 +1,11 @@
 import { z } from 'zod';
-import { InvoiceStatus } from './invoice.entity';
 import { createZodDto } from 'nestjs-zod';
+import { InvoiceStatus } from './invoice.entity';
 
 export const createInvoiceSchema = z.object({
-  orderId: z.uuid(),
+  orderId: z.string().uuid(),
   invoiceNumber: z.string(),
-  status: z.enum(InvoiceStatus),
+  status: z.nativeEnum(InvoiceStatus),
   date: z.coerce.date(),
 });
 export const updateInvoiceSchema = createInvoiceSchema.partial();
