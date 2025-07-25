@@ -1,7 +1,7 @@
 import {
   Controller,
   Get,
-  Post,
+  //Post,
   Delete,
   Body,
   Param,
@@ -18,7 +18,7 @@ import { User } from './user.entity';
 import { UserService } from './user.service';
 import {
   CreateUserDto,
-  createUserSchema,
+  //createUserSchema,
   UpdateUserDto,
   updateUserSchema,
   UserRole,
@@ -62,7 +62,7 @@ export class UserController extends BaseController<
     return super.findOne(params, user);
   }
 
-  @CustomMessage('User created successfully')
+  /*@CustomMessage('User created successfully')
   @Post()
   @Roles(UserRole.OWNER, UserRole.OPERATOR)
   @ApiOperation({ summary: 'Create a new user' })
@@ -78,7 +78,7 @@ export class UserController extends BaseController<
     @UserDecorator() user: AuthUser,
   ) {
     return super.create(dto, user);
-  }
+  }*/
 
   @CustomMessage('User updated successfully')
   @Patch(':id')

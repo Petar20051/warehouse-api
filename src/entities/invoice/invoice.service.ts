@@ -29,11 +29,33 @@ export class InvoiceService extends BaseService<Invoice> {
     });
   }
 
+  override async findAllByCompany(companyId: string): Promise<Invoice[]> {
+    return this.repo
+      .createQueryBuilder('invoice')
+      .leftJoin('invoice.order', 'o')
+      .leftJoin('o.company', 'c')
+      .where('c.id = :companyId', { companyId })
+      .andWhere('invoice.deletedAt IS NULL')
+      .getMany();
+  }
+
   override async findOne(
     id: string,
     companyId: string,
   ): Promise<Invoice | null> {
-    return this.findOneSecure(id, companyId);
+    const invoice = await this.repo
+      .createQueryBuilder('invoice')
+      .leftJoin('invoice.order', 'o')
+      .leftJoin('o.company', 'c')
+      .where('invoice.id = :id', { id })
+      .andWhere('c.id = :companyId', { companyId })
+      .getOne();
+
+    if (!invoice) {
+      throw new ForbiddenException('Access denied or invoice not found');
+    }
+
+    return invoice;
   }
 
   override async updateWithUserContext(
@@ -42,8 +64,9 @@ export class InvoiceService extends BaseService<Invoice> {
     user: AuthUser,
   ): Promise<Invoice | null> {
     const existing = await this.findOneSecure(id, user.companyId);
-    if (!existing)
+    if (!existing) {
       throw new ForbiddenException('Invoice not found or access denied');
+    }
 
     const updated = this.invoiceRepo.merge(existing, {
       ...dto,
@@ -55,16 +78,18 @@ export class InvoiceService extends BaseService<Invoice> {
 
   override async softDelete(id: string, user: AuthUser): Promise<void> {
     const existing = await this.findOneSecure(id, user.companyId);
-    if (!existing)
+    if (!existing) {
       throw new ForbiddenException('Invoice not found or access denied');
+    }
 
     await this.invoiceRepo.softDelete({ id });
   }
 
   override async hardDelete(id: string, companyId: string): Promise<void> {
     const existing = await this.findOneSecure(id, companyId);
-    if (!existing)
+    if (!existing) {
       throw new ForbiddenException('Invoice not found or access denied');
+    }
 
     await this.invoiceRepo.delete({ id });
   }

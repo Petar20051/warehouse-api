@@ -32,7 +32,6 @@ export class ProductService extends BaseService<Product> {
   ) {
     super(productRepo);
   }
-
   async getBestSellingProducts(
     companyId: string,
   ): Promise<BestSellingProduct[]> {
@@ -42,11 +41,11 @@ export class ProductService extends BaseService<Product> {
       .leftJoin('orderItem.order', 'order')
       .select('product.id', 'productId')
       .addSelect('product.name', 'title')
-      .addSelect('SUM(orderItem.quantity)', 'totalSold') // ✅ fixed alias casing
+      .addSelect('SUM(orderItem.quantity)', 'totalSold')
       .where('product.companyId = :companyId', { companyId })
       .andWhere('order.deletedAt IS NULL')
       .groupBy('product.id')
-      .orderBy('totalSold', 'DESC')
+      .orderBy('"totalSold"', 'DESC')
       .limit(5)
       .getRawMany<BestSellingProduct>();
   }

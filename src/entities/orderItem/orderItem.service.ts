@@ -27,6 +27,16 @@ export class OrderItemService extends BaseService<OrderItem> {
     super(repo);
   }
 
+  override async findAllByCompany(companyId: string): Promise<OrderItem[]> {
+    return this.repo
+      .createQueryBuilder('orderItem')
+      .leftJoin('orderItem.order', 'o')
+      .leftJoin('o.company', 'c')
+      .where('c.id = :companyId', { companyId })
+      .andWhere('orderItem.deletedAt IS NULL')
+      .getMany();
+  }
+
   override async findOne(
     id: string,
     companyId: string,
