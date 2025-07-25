@@ -2,21 +2,21 @@ import {
   Injectable,
   UnauthorizedException,
   ConflictException,
+  NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
-import {
-  AuthMessages,
-  LoginInput,
-  RegisterInput,
-  RegisterUserToCompanySchema,
-} from './auth.static';
-import { z } from 'zod';
 import { User } from 'src/entities/user/user.entity';
 import { Company } from 'src/entities/company/company.entity';
 import { UserRole } from 'src/entities/user/user.static';
+import {
+  AuthMessages,
+  LoginDto,
+  RegisterDto,
+  RegisterUserToCompanyDto,
+} from './auth.static';
 
 @Injectable()
 export class AuthService {
@@ -27,11 +27,11 @@ export class AuthService {
     private readonly jwtService: JwtService,
   ) {}
 
-  async register(data: RegisterInput) {
+  async register(data: RegisterDto) {
     const existing = await this.userRepo.findOne({
       where: { email: data.email },
     });
-    if (existing) throw new ConflictException(AuthMessages.invalidCredentials);
+    if (existing) throw new ConflictException('Email already in use');
 
     const hashed = await bcrypt.hash(data.password, 10);
 
@@ -53,7 +53,7 @@ export class AuthService {
     return this.generateToken(user);
   }
 
-  async login(data: LoginInput) {
+  async login(data: LoginDto) {
     const user = await this.userRepo.findOne({ where: { email: data.email } });
     if (!user) throw new UnauthorizedException(AuthMessages.invalidCredentials);
 
@@ -64,19 +64,15 @@ export class AuthService {
     return this.generateToken(user);
   }
 
-  async registerUserToCompany(
-    data: z.infer<typeof RegisterUserToCompanySchema>,
-  ) {
+  async registerUserToCompany(data: RegisterUserToCompanyDto) {
     const { companyId, fullName, email, password } = data;
 
     const existingCompany = await this.companyRepo.findOne({
       where: { id: companyId },
     });
-    if (!existingCompany) throw new Error('Company not found');
+    if (!existingCompany) throw new NotFoundException('Company not found');
 
-    const existingUser = await this.userRepo.findOne({
-      where: { email },
-    });
+    const existingUser = await this.userRepo.findOne({ where: { email } });
     if (existingUser) throw new ConflictException('Email already in use');
 
     const hashedPassword = await bcrypt.hash(password, 10);
@@ -99,8 +95,16 @@ export class AuthService {
       role: user.role,
       companyId: user.companyId,
     };
+
     return {
       accessToken: this.jwtService.sign(payload),
+      user: {
+        id: user.id,
+        email: user.email,
+        fullName: user.fullName,
+        role: user.role,
+        companyId: user.companyId,
+      },
     };
   }
 }

@@ -18,6 +18,15 @@ export class OrderService extends BaseService<Order> {
     super(repo);
   }
 
+  async findAllByCompany(companyId: string): Promise<Order[]> {
+    return this.repo.find({
+      where: {
+        company: { id: companyId },
+      },
+      relations: ['partner', 'warehouse', 'company', 'invoice'],
+    });
+  }
+
   async createWithUserContext(
     dto: CreateOrderDto,
     user: AuthUser,

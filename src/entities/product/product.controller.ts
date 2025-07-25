@@ -39,9 +39,9 @@ export class ProductController extends BaseController<Product> {
     super(productService);
   }
 
-  @CustomMessage('Top 5 best-selling products retrieved successfully')
+  @CustomMessage('Best-selling products retrieved successfully')
   @Get('/best-selling')
-  @ApiOperation({ summary: 'Get top 5 best-selling products' })
+  @ApiOperation({ summary: 'Get best-selling products' })
   getBestSellingProducts(@User('companyId') companyId: string) {
     return this.productService.getBestSellingProducts(companyId);
   }
