@@ -20,11 +20,9 @@ export class HttpExceptionFilter implements ExceptionFilter {
     let message: string | string[] = 'Internal server error';
 
     if (exception instanceof ZodValidationException) {
-      // This comes from nestjs-zod and wraps ZodError
       status = HttpStatus.BAD_REQUEST;
       message = this.formatZodIssues(exception.getZodError());
     } else if (exception instanceof ZodError) {
-      // Catch raw ZodError just in case
       status = HttpStatus.BAD_REQUEST;
       message = this.formatZodIssues(exception);
     } else if (exception instanceof HttpException) {

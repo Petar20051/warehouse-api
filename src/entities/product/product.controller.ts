@@ -4,8 +4,8 @@ import {
   Delete,
   Get,
   Param,
-  Patch,
   Post,
+  Put,
 } from '@nestjs/common';
 import { Product } from './product.entity';
 import { ProductService } from './product.service';
@@ -82,7 +82,7 @@ export class ProductController extends BaseController<Product> {
   }
 
   @CustomMessage('Product updated successfully')
-  @Patch(':id')
+  @Put(':id')
   @Roles(UserRole.OWNER, UserRole.OPERATOR)
   @ApiOperation({ summary: 'Update a product by ID' })
   @ApiParam({ name: 'id', description: 'Product UUID' })

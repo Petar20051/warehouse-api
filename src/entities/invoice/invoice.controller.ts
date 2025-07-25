@@ -5,7 +5,7 @@ import {
   Get,
   Post,
   Delete,
-  Patch,
+  Put,
 } from '@nestjs/common';
 import { ZodValidationPipe } from 'nestjs-zod';
 import { IdParamDto, idParamSchema } from 'src/common/types/id-param.static';
@@ -82,7 +82,7 @@ export class InvoiceController extends BaseController<
   }
 
   @CustomMessage('Invoice updated successfully')
-  @Patch(':id')
+  @Put(':id')
   @Roles(UserRole.OWNER, UserRole.OPERATOR)
   @ApiOperation({ summary: 'Update an invoice by ID' })
   @ApiParam({ name: 'id', description: 'Invoice UUID' })

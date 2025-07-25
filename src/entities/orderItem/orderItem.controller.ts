@@ -5,7 +5,7 @@ import {
   Delete,
   Post,
   Get,
-  Patch,
+  Put,
 } from '@nestjs/common';
 import { OrderItem } from './orderItem.entity';
 import { OrderItemService } from './orderItem.service';
@@ -80,7 +80,7 @@ export class OrderItemController extends BaseController<OrderItem> {
   }
 
   @CustomMessage('Order item updated successfully')
-  @Patch(':id')
+  @Put(':id')
   @Roles(UserRole.OWNER, UserRole.OPERATOR)
   @ApiOperation({ summary: 'Update an order item by ID' })
   @ApiParam({ name: 'id', description: 'OrderItem UUID' })

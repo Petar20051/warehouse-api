@@ -1,4 +1,4 @@
-import { Controller, Post, Delete, Body, Param, Patch } from '@nestjs/common';
+import { Controller, Post, Delete, Body, Param, Put } from '@nestjs/common';
 import {
   ApiTags,
   ApiBearerAuth,
@@ -68,7 +68,7 @@ export class CompanyController extends BaseController<Company> {
   }
 
   @CustomMessage('Company updated successfully')
-  @Patch(':id')
+  @Put(':id')
   @Roles(UserRole.OWNER, UserRole.OPERATOR)
   @ApiOperation({ summary: 'Update a company by ID' })
   @ApiParam({ name: 'id', description: 'Company UUID' })
