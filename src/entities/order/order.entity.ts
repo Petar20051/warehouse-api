@@ -8,7 +8,7 @@ import { User } from '../user/user.entity';
 
 export type OrderType = 'shipment' | 'delivery';
 
-@Entity({ name: 'order' })
+@Entity({ name: 'orders' })
 export class Order extends BaseEntity {
   @ManyToOne(() => Company, (company) => company.orders)
   @JoinColumn({ name: 'company_id' })

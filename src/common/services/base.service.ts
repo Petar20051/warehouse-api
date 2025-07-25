@@ -41,7 +41,7 @@ export class BaseService<
   ): Promise<TEntity> {
     const entity = this.repo.create({
       ...data,
-      companyId: user.companyId,
+      company: { id: user.companyId },
       modifiedByUserId: user.userId,
     } as DeepPartial<TEntity>);
 
@@ -65,16 +65,24 @@ export class BaseService<
     return this.repo.save(updated);
   }
 
-  async softDelete(id: string, companyId: string): Promise<void> {
+  async softDelete(id: string, user: AuthUser): Promise<void> {
     const entity = await this.repo.findOne({ where: whereId<TEntity>(id) });
 
-    this.assertCompanyAccess(entity, companyId);
+    this.assertCompanyAccess(entity, user.companyId);
 
+    const updated = this.repo.merge(entity!, {
+      modifiedByUserId: user.userId,
+    } as unknown as DeepPartial<TEntity>);
+
+    await this.repo.save(updated);
     await this.repo.softDelete(id);
   }
 
   async hardDelete(id: string, companyId: string): Promise<void> {
-    const entity = await this.repo.findOne({ where: whereId<TEntity>(id) });
+    const entity = await this.repo.findOne({
+      where: whereId<TEntity>(id),
+      withDeleted: true,
+    });
 
     this.assertCompanyAccess(entity, companyId);
 

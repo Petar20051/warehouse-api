@@ -13,7 +13,6 @@ export const createPartnerSchema = z.object({
   email: z.string().email(),
   phone: z.string().min(6).max(32),
   address: z.string().min(2).max(128),
-  companyId: z.string().uuid(),
 });
 export const updatePartnerSchema = createPartnerSchema.partial();
 

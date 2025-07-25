@@ -1,10 +1,16 @@
-import { Injectable } from '@nestjs/common';
+import {
+  Injectable,
+  ConflictException,
+  ForbiddenException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Product } from './product.entity';
 import { OrderItem } from '../orderItem/orderItem.entity';
 import { Order } from '../order/order.entity';
 import { BaseService } from 'src/common/services/base.service';
+import { AuthUser } from 'src/common/types/auth-user';
+import { UpdateProductDto } from './product.static';
 
 type BestSellingProduct = {
   productId: string;
@@ -36,12 +42,47 @@ export class ProductService extends BaseService<Product> {
       .leftJoin('orderItem.order', 'order')
       .select('product.id', 'productId')
       .addSelect('product.name', 'title')
-      .addSelect('SUM(orderItem.quantity)', 'totalsold')
+      .addSelect('SUM(orderItem.quantity)', 'totalSold') // ✅ fixed alias casing
       .where('product.companyId = :companyId', { companyId })
       .andWhere('order.deletedAt IS NULL')
       .groupBy('product.id')
       .orderBy('totalSold', 'DESC')
       .limit(5)
       .getRawMany<BestSellingProduct>();
+  }
+
+  async updateWithSkuCheck(
+    id: string,
+    dto: UpdateProductDto,
+    user: AuthUser,
+  ): Promise<Product> {
+    const existing = await this.findOneSecure(id, user.companyId);
+    if (!existing)
+      throw new ForbiddenException('Product not found or access denied');
+
+    if (dto.sku && dto.sku !== existing.sku) {
+      const conflict = await this.repo.findOne({
+        where: { sku: dto.sku },
+      });
+      if (conflict)
+        throw new ConflictException('SKU already in use by another product');
+    }
+
+    const updated = this.repo.merge(existing, {
+      ...dto,
+      modifiedByUserId: user.userId,
+    });
+
+    return this.repo.save(updated);
+  }
+
+  private async findOneSecure(
+    id: string,
+    companyId: string,
+  ): Promise<Product | null> {
+    return this.repo.findOne({
+      where: { id, company: { id: companyId } },
+      relations: ['company'],
+    });
   }
 }

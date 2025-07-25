@@ -2,10 +2,10 @@ import {
   Controller,
   Get,
   Post,
-  Put,
   Delete,
   Body,
   Param,
+  Patch,
 } from '@nestjs/common';
 import {
   ApiTags,
@@ -81,7 +81,7 @@ export class UserController extends BaseController<
   }
 
   @CustomMessage('User updated successfully')
-  @Put(':id')
+  @Patch(':id')
   @Roles(UserRole.OWNER, UserRole.OPERATOR)
   @ApiOperation({ summary: 'Update a user by ID' })
   @ApiParam({ name: 'id', description: 'User UUID' })

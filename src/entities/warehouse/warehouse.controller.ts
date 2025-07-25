@@ -2,10 +2,10 @@ import {
   Controller,
   Get,
   Post,
-  Put,
   Delete,
   Body,
   Param,
+  Patch,
 } from '@nestjs/common';
 import {
   ApiTags,
@@ -85,7 +85,7 @@ export class WarehouseController extends BaseController<Warehouse> {
   }
 
   @CustomMessage('Warehouse updated successfully')
-  @Put(':id')
+  @Patch(':id')
   @Roles(UserRole.OWNER, UserRole.OPERATOR)
   @ApiOperation({ summary: 'Update a warehouse by ID' })
   @ApiParam({ name: 'id', description: 'Warehouse UUID' })

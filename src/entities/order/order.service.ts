@@ -18,11 +18,18 @@ export class OrderService extends BaseService<Order> {
     super(repo);
   }
 
-  override async createWithUserContext(
+  async createWithUserContext(
     dto: CreateOrderDto,
     user: AuthUser,
   ): Promise<Order> {
-    const created = await super.createWithUserContext(dto, user);
+    const created = await super.createWithUserContext(
+      {
+        ...dto,
+        warehouse: { id: dto.warehouseId },
+        partner: dto.partnerId ? { id: dto.partnerId } : null,
+      },
+      user,
+    );
 
     const order = await this.repo.findOne({
       where: { id: created.id },

@@ -6,7 +6,7 @@
   "private": true,
   "license": "UNLICENSED",
   "scripts": {
-    "start": "nest start",
+    "start": "nest start --watch",
     "start:dev": "ts-node  --require tsconfig-paths/register src/main.ts --watch",
     "start:debug": "nest start --debug --watch",
     "start:prod": "node dist/main",

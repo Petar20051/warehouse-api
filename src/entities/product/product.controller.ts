@@ -4,10 +4,9 @@ import {
   Delete,
   Get,
   Param,
+  Patch,
   Post,
-  Put,
 } from '@nestjs/common';
-
 import { Product } from './product.entity';
 import { ProductService } from './product.service';
 import { ZodValidationPipe } from 'nestjs-zod';
@@ -44,7 +43,6 @@ export class ProductController extends BaseController<Product> {
   @Get('/best-selling')
   @ApiOperation({ summary: 'Get top 5 best-selling products' })
   getBestSellingProducts(@User('companyId') companyId: string) {
-    console.log('Received companyId:', companyId);
     return this.productService.getBestSellingProducts(companyId);
   }
 
@@ -72,7 +70,6 @@ export class ProductController extends BaseController<Product> {
   @ApiOperation({ summary: 'Create a new product' })
   @ApiBody({
     type: CreateProductDto,
-    description: 'Fields required to create a product',
     examples: {
       minimal: { value: { name: '', sku: '', productType: '', basePrice: 0 } },
     },
@@ -85,13 +82,12 @@ export class ProductController extends BaseController<Product> {
   }
 
   @CustomMessage('Product updated successfully')
-  @Put(':id')
+  @Patch(':id')
   @Roles(UserRole.OWNER, UserRole.OPERATOR)
   @ApiOperation({ summary: 'Update a product by ID' })
   @ApiParam({ name: 'id', description: 'Product UUID' })
   @ApiBody({
     type: UpdateProductDto,
-    description: 'Fields to update an existing product',
     examples: {
       empty: { value: { name: '', sku: '', productType: '', basePrice: 0 } },
     },
@@ -101,7 +97,7 @@ export class ProductController extends BaseController<Product> {
     @Body(new ZodValidationPipe(updateProductSchema)) dto: UpdateProductDto,
     @User() user: AuthUser,
   ) {
-    return super.update(params, dto, user);
+    return this.productService.updateWithSkuCheck(params.id, dto, user);
   }
 
   @CustomMessage('Product soft-deleted successfully')

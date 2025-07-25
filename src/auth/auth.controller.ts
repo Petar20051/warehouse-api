@@ -1,5 +1,5 @@
 import { Body, Controller, HttpCode, Post, UseGuards } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiBody } from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiBody, ApiBearerAuth } from '@nestjs/swagger';
 import { AuthService } from './auth.service';
 import {
   LoginSchema,
@@ -49,6 +49,8 @@ export class AuthController {
     const data = LoginSchema.parse(body);
     return this.authService.login(data);
   }
+
+  @ApiBearerAuth()
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.OPERATOR, UserRole.OWNER)
   @Post('register-user')

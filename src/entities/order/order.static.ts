@@ -6,7 +6,7 @@ export const createOrderSchema = z.object({
   partnerId: z.string().uuid().optional(),
   orderType: z.enum(['shipment', 'delivery']),
   notes: z.string().optional(),
-  date: z.coerce.date(),
+  date: z.coerce.date().optional(),
 });
 export const updateOrderSchema = createOrderSchema.partial();
 

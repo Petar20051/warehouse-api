@@ -41,9 +41,13 @@ export class OrderItemService extends BaseService<OrderItem> {
     await this.runAllValidations(dto);
 
     const entity: Partial<OrderItem> = {
-      ...dto,
+      unitPrice: dto.unitPrice,
+      quantity: dto.quantity,
+      order: { id: dto.orderId } as Order,
+      product: { id: dto.productId } as Product,
       modifiedByUserId: user.userId,
     };
+
     return this.repo.save(this.repo.create(entity));
   }
 
@@ -67,8 +71,8 @@ export class OrderItemService extends BaseService<OrderItem> {
     return this.repo.save(existing);
   }
 
-  override async softDelete(id: string, companyId: string): Promise<void> {
-    const item = await this.findOneSecure(id, companyId);
+  override async softDelete(id: string, user: AuthUser): Promise<void> {
+    const item = await this.findOneSecure(id, user.companyId);
     if (!item)
       throw new ForbiddenException('Order item not found or access denied');
 
@@ -159,13 +163,13 @@ export class OrderItemService extends BaseService<OrderItem> {
 
     const orderItems = await this.repo
       .createQueryBuilder('orderItem')
-      .innerJoinAndSelect('orderItem.order', 'order')
+      .innerJoinAndSelect('orderItem.order', 'o')
       .where('orderItem.productId = :productId', { productId: dto.productId })
-      .andWhere('order.warehouseId = :warehouseId', {
+      .andWhere('o.warehouse_id = :warehouseId', {
         warehouseId: order.warehouse.id,
       })
       .andWhere('orderItem.deletedAt IS NULL')
-      .andWhere('order.deletedAt IS NULL')
+      .andWhere('o.deletedAt IS NULL')
       .getMany();
 
     let availableStock = 0;

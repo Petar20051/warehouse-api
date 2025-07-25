@@ -45,7 +45,7 @@ export class BaseController<
     @Param(new ZodValidationPipe(idParamSchema)) params: IdParamDto,
     @User() user: AuthUser,
   ) {
-    return this.service.softDelete(params.id, user.companyId);
+    return this.service.softDelete(params.id, user);
   }
 
   hardDelete(

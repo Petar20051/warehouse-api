@@ -11,7 +11,7 @@ export enum InvoiceStatus {
 
 @Entity({ name: 'invoice' })
 export class Invoice extends BaseEntity {
-  @Column({ name: 'invoice_number', type: 'varchar', length: 50 })
+  @Column({ name: 'invoice_number', type: 'varchar', length: 50, unique: true })
   invoiceNumber!: string;
 
   @OneToOne(() => Order, (order) => order.invoice)

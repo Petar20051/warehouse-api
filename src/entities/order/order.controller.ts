@@ -3,9 +3,9 @@ import {
   Body,
   Param,
   Delete,
-  Put,
   Post,
   Get,
+  Patch,
 } from '@nestjs/common';
 import { Order } from './order.entity';
 import { OrderService } from './order.service';
@@ -66,11 +66,17 @@ export class OrderController extends BaseController<Order> {
     description: 'Fields required to create an order',
     examples: {
       minimal: {
-        value: { warehouseId: '', orderType: '', notes: '', date: '' },
+        value: {
+          warehouseId: '',
+          partnerID: '',
+          orderType: '',
+          notes: '',
+          date: '',
+        },
       },
     },
   })
-  create(
+  override create(
     @Body(new ZodValidationPipe(createOrderSchema)) dto: CreateOrderDto,
     @User() user: AuthUser,
   ) {
@@ -78,7 +84,7 @@ export class OrderController extends BaseController<Order> {
   }
 
   @CustomMessage('Order updated successfully')
-  @Put(':id')
+  @Patch(':id')
   @Roles(UserRole.OWNER, UserRole.OPERATOR)
   @ApiOperation({ summary: 'Update an order by ID' })
   @ApiParam({ name: 'id', description: 'Order UUID' })

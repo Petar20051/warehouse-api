@@ -4,8 +4,8 @@ import {
   Param,
   Get,
   Post,
-  Put,
   Delete,
+  Patch,
 } from '@nestjs/common';
 
 import { Partner } from './partner.entity';
@@ -93,7 +93,7 @@ export class PartnerController extends BaseController<Partner> {
   }
 
   @CustomMessage('Partner updated successfully')
-  @Put(':id')
+  @Patch(':id')
   @Roles(UserRole.OWNER, UserRole.OPERATOR)
   @ApiOperation({ summary: 'Update a partner by ID' })
   @ApiParam({ name: 'id', description: 'Partner UUID' })

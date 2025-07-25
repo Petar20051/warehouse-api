@@ -53,8 +53,8 @@ export class InvoiceService extends BaseService<Invoice> {
     return this.invoiceRepo.save(updated);
   }
 
-  override async softDelete(id: string, companyId: string): Promise<void> {
-    const existing = await this.findOneSecure(id, companyId);
+  override async softDelete(id: string, user: AuthUser): Promise<void> {
+    const existing = await this.findOneSecure(id, user.companyId);
     if (!existing)
       throw new ForbiddenException('Invoice not found or access denied');
 
