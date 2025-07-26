@@ -7,6 +7,7 @@ import { InvoiceService } from '../invoice/invoice.service';
 import { AuthUser } from 'src/common/types/auth-user';
 import { CreateOrderDto } from './order.static';
 import { InvoiceStatus } from '../invoice/invoice.entity';
+import { Partner } from '../partner/partner.entity';
 
 @Injectable()
 export class OrderService extends BaseService<Order> {
@@ -31,19 +32,48 @@ export class OrderService extends BaseService<Order> {
     dto: CreateOrderDto,
     user: AuthUser,
   ): Promise<Order> {
+    const warehouse = await this.repo.manager.findOne('Warehouse', {
+      where: { id: dto.warehouseId, company: { id: user.companyId } },
+    });
+
+    if (!warehouse) {
+      throw new Error('Warehouse not found or does not belong to your company');
+    }
+    let partner = null;
+    if (dto.partnerId) {
+      partner = await this.repo.manager.findOne<Partner>('Partner', {
+        where: { id: dto.partnerId, company: { id: user.companyId } },
+      });
+
+      if (!partner) {
+        throw new Error('Partner not found or does not belong to your company');
+      }
+
+      const isValid =
+        (dto.orderType === 'shipment' && partner.type === 'customer') ||
+        (dto.orderType === 'delivery' && partner.type === 'supplier');
+
+      if (!isValid) {
+        throw new Error(
+          `Invalid partner type for orderType '${dto.orderType}'. Shipment requires a customer, delivery requires a supplier.`,
+        );
+      }
+    }
+
     const created = await super.createWithUserContext(
       {
         ...dto,
-        warehouse: { id: dto.warehouseId },
-        partner: dto.partnerId ? { id: dto.partnerId } : null,
+        warehouse,
+        partner,
       },
       user,
     );
 
     const order = await this.repo.findOne({
       where: { id: created.id },
-      relations: ['partner'],
+      relations: ['partner', 'warehouse', 'company', 'invoice'],
     });
+
     if (!order) throw new Error('Order not found after creation');
 
     const shouldCreateInvoice =

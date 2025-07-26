@@ -3,6 +3,7 @@ import {
   QueryRunner,
   Table,
   TableForeignKey,
+  TableUnique,
 } from 'typeorm';
 
 export class CreatePartnerTable1753103094010 implements MigrationInterface {
@@ -76,6 +77,12 @@ export class CreatePartnerTable1753103094010 implements MigrationInterface {
             type: 'uuid',
             isNullable: false,
           },
+        ],
+        uniques: [
+          new TableUnique({
+            name: 'unique_partner_name_company',
+            columnNames: ['name', 'company_id'],
+          }),
         ],
       }),
     );

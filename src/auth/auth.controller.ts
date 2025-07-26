@@ -55,7 +55,7 @@ export class AuthController {
 
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(UserRole.OPERATOR, UserRole.OWNER)
+  @Roles(UserRole.OWNER)
   @Post('register-user')
   @ApiOperation({
     summary: 'Register a user to an existing company (default: viewer)',

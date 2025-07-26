@@ -44,6 +44,7 @@ export class ProductService extends BaseService<Product> {
       .addSelect('SUM(orderItem.quantity)', 'totalSold')
       .where('product.companyId = :companyId', { companyId })
       .andWhere('order.deletedAt IS NULL')
+      .andWhere('order.orderType = :orderType', { orderType: 'shipment' })
       .groupBy('product.id')
       .orderBy('"totalSold"', 'DESC')
       .limit(5)

@@ -50,6 +50,9 @@ export class AuthService {
     });
     await this.userRepo.save(user);
 
+    company.modifiedByUserId = user.id;
+    await this.companyRepo.save(company);
+
     return this.generateToken(user);
   }
 
@@ -98,13 +101,6 @@ export class AuthService {
 
     return {
       accessToken: this.jwtService.sign(payload),
-      user: {
-        id: user.id,
-        email: user.email,
-        fullName: user.fullName,
-        role: user.role,
-        companyId: user.companyId,
-      },
     };
   }
 }
