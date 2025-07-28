@@ -12,6 +12,8 @@ import { OrderService } from './order.service';
 import {
   CreateOrderDto,
   createOrderSchema,
+  CreateOrderWithItemsDto,
+  createOrderWithItemsSchema,
   UpdateOrderDto,
   updateOrderSchema,
 } from './order.static';
@@ -125,5 +127,21 @@ export class OrderController extends BaseController<Order> {
     @User() user: AuthUser,
   ) {
     return super.hardDelete(params, user);
+  }
+
+  @Post('full')
+  @Roles(UserRole.OWNER, UserRole.OPERATOR)
+  @CustomMessage('Order with items created successfully')
+  @ApiOperation({ summary: 'Create order with nested order items' })
+  @ApiBody({
+    type: CreateOrderWithItemsDto,
+    description: 'Full order creation with its items',
+  })
+  createFullOrder(
+    @Body(new ZodValidationPipe(createOrderWithItemsSchema))
+    dto: CreateOrderWithItemsDto,
+    @User() user: AuthUser,
+  ) {
+    return this.orderService.createFullOrder(dto, user);
   }
 }
