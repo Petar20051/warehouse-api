@@ -12,7 +12,7 @@ import { AuthUser } from '../types/auth-user';
 @ApiBearerAuth('Authorization')
 @UseGuards(JwtAuthGuard, RolesGuard)
 export class BaseController<
-  T extends { id: string; companyId: string },
+  T extends { id: string; companyId?: string },
   CreateDto extends DeepPartial<T> = DeepPartial<T>,
   UpdateDto extends DeepPartial<T> = DeepPartial<T>,
 > {
